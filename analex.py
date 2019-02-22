@@ -6,6 +6,8 @@ Analisador Léxico - Versao 1.0
 """
 import re    
 from enum import Enum 
+
+# Enum para as Expressoes Regulares 
 class Regex(Enum):
     ID = r'^([a-zA-Z]([a-zA-Z]|\d)*)'
     NUMBER = r'^((-?)(\d+)((\.\d+)?))'
@@ -14,24 +16,26 @@ class Regex(Enum):
     GREATEREQUAL = r'^(>=)'
     DIFFERENT = r'^(!=)'
 
+# Enum para Palavras Reservadas 
+class ReserverdWord(Enum):
+    AND = 'OPR_LOG'
+    OR = 'OPR_LOG'
+    NOT = 'OPR_LOG'
+    IF = 'IF'
+    ELSE = 'ELSE'
+    WHILE ='WHILE'
+    
+    def isReservedWord( identifier ):
+        for i in ReserverdWord:
+            if i.name.lower() == identifier: 
+                return True, Token(i.value, None)
+        return False, None
+            
+# Classe para Manipular o Token
 class Token:
     def __init__(self, tipo, valor): 
         self.tipo = tipo
         self.valor = valor 
-        
-def isReservedWord( identifier ):
-    reservedWords = {
-            'and': 'OPR_LOG',
-            'or': 'OPR_LOG',
-            'not': 'OPR_LOG',
-            'if': 'IF',
-            'else':'ELSE',
-            'while':'WHILE',
-            }
-    
-    if identifier in list(reservedWords.keys()):    
-        return True, Token(reservedWords[identifier], None)
-    return False, Token(None, None)
 
 def analyzeWord( word ): 
     tokenList = []
@@ -52,7 +56,7 @@ def analyzeWord( word ):
             for i in foundId:
                 idWord = i[0]; 
             # Verify if is reserved word 
-            isReserved, reservedWordToken = isReservedWord(idWord)
+            isReserved, reservedWordToken = ReserverdWord.isReservedWord(idWord)
             if isReserved:
                 token = reservedWordToken
             else: 
