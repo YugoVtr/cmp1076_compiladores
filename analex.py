@@ -5,6 +5,14 @@ Spyder Editor
 Analisador Léxico - Versao 1.0 
 """
 import re    
+from enum import Enum 
+class Regex(Enum):
+    ID = r'^([a-zA-Z]([a-zA-Z]|\d)*)'
+    NUMBER = r'^((-?)(\d+)((\.\d+)?))'
+    EQUAL = r'^(==)'
+    LESSEQUAL = r'^(<=)'
+    GREATEREQUAL = r'^(>=)'
+    DIFFERENT = r'^(!=)'
 
 class Token:
     def __init__(self, tipo, valor): 
@@ -12,7 +20,6 @@ class Token:
         self.valor = valor 
         
 def isReservedWord( identifier ):
-    
     reservedWords = {
             'and': 'OPR_LOG',
             'or': 'OPR_LOG',
@@ -28,24 +35,65 @@ def isReservedWord( identifier ):
 
 def analyzeWord( word ): 
     tokenList = []
-    idList = []
-    numberList = []
-    
-    for i in re.findall(r'([a-zA-Z]([a-zA-Z]|\d)*)', word):
-        idList.append(i[0])
-    
-    for i in re.findall(r'([-]*\d+[.\d]+)', word):
-        numberList.append(i)
-    
-    word = re.sub(r'([a-zA-Z]([a-zA-Z]|\d)*)', chr(1), word)
-    word = re.sub(r'([-]*\d+[.\d]+)', chr(2), word)
-    word = re.sub(r'==', chr(3), word) 
-    word = re.sub(r'<=', chr(4), word) 
-    word = re.sub(r'>=', chr(5), word) 
-    word = re.sub(r'!=', chr(6), word) 
-    
-    for char in word :
-        # Single char
+              
+    while len(word) > 0 : 
+        char = word[0]
+        
+        # Verify if Start at Regex 
+        foundId =           re.findall(Regex.ID.value, word)
+        foundNumber =       re.findall(Regex.NUMBER.value, word)
+        foundEqual =        re.findall(Regex.EQUAL.value, word)
+        foundLessEqual =    re.findall(Regex.LESSEQUAL.value, word)
+        foundGreaterEqual = re.findall(Regex.GREATEREQUAL.value, word)
+        foundDifferent =    re.findall(Regex.DIFFERENT.value, word)
+
+        # ============== PROCURAR ID E PALAVRAS RESERVADAS ====================
+        if foundId:
+            for i in foundId:
+                idWord = i[0]; 
+            # Verify if is reserved word 
+            isReserved, reservedWordToken = isReservedWord(idWord)
+            if isReserved:
+                token = reservedWordToken
+            else: 
+                token = Token('ID', idWord)
+            tokenList.append(token)
+            word = re.sub(Regex.ID.value, '', word) 
+            continue
+        # ========================== PROCURAR NUMERO ==========================
+        elif foundNumber:
+            for i in foundNumber:
+                token = Token('NUM', i[0])
+            tokenList.append(token)
+            word = re.sub(Regex.NUMBER.value, '', word) 
+            continue
+        # ======================= PROCURAR IGUAL ==============================
+        elif foundEqual:
+            token = Token('OPR_REL', 'igual')
+            tokenList.append(token)
+            word = re.sub(Regex.EQUAL.value, '', word) 
+            continue
+        # =================== PROCURAR MENOR IGUAL ============================       
+        elif foundLessEqual:
+            token = Token('OPR_REL', 'menor igual')
+            tokenList.append(token)
+            word = re.sub(Regex.LESSEQUAL.value, '', word)  
+            continue
+        # =================== PROCURAR MAIOR IGUAL ============================
+        elif foundGreaterEqual:
+            token = Token('OPR_REL', 'maior igual')
+            tokenList.append(token)
+            word = re.sub(Regex.GREATEREQUAL.value, '', word) 
+            continue
+        # =================== PROCURAR DIFERENTE IGUAL ========================
+        elif foundDifferent:
+            token = Token('OPR_REL', 'diferente')
+            tokenList.append(token)
+            word = re.sub(Regex.DIFFERENT.value, '', word) 
+            continue
+        
+        # ================ PROCURAR CARACTERES INDIVIDUAIS ====================
+        word = "".join(list(word)[1:len(word)])
         if char == '<':
             token = Token('OPR_REL', 'menor')
             tokenList.append(token)
@@ -100,35 +148,6 @@ def analyzeWord( word ):
             continue
         elif char == '=':
             token = Token('ATRIB', None)
-            tokenList.append(token) 
-            continue
-        elif char == chr(1):
-            idWord = idList.pop(); 
-            flag, reservedWordToken = isReservedWord(idWord)
-            if flag:
-                token = reservedWordToken
-            else: 
-                token = Token('ID', idWord)
-            tokenList.append(token) 
-            continue
-        elif char == chr(2):
-            token = Token('NUM', numberList.pop())
-            tokenList.append(token) 
-            continue
-        elif char == chr(3):
-            token = Token('OPR_REL', 'igual')
-            tokenList.append(token) 
-            continue
-        elif char == chr(4):
-            token = Token('OPR_REL', 'menor igual')
-            tokenList.append(token) 
-            continue
-        elif char == chr(5):
-            token = Token('OPR_REL', 'maior igual')
-            tokenList.append(token) 
-            continue
-        elif char == chr(6):
-            token = Token('OPR_REL', 'diferente')
             tokenList.append(token) 
             continue
         else:
