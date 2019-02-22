@@ -2,10 +2,11 @@
 """
 Spyder Editor
 
-Analisador Léxico - Versao 1.0 
+Analisador Léxico - Versao 1.0
 """
-import re    
-from enum import Enum 
+import re                                                         # Regex
+from enum import Enum                                             # Enumeracao
+import pprint                                                     # Impressao
 
 # Enum para as Expressoes Regulares 
 class Regex(Enum):
@@ -25,10 +26,20 @@ class ReserverdWord(Enum):
     ELSE = 'ELSE'
     WHILE ='WHILE'
     
-    def isReservedWord( identifier ):
-        for i in ReserverdWord:
-            if i.name.lower() == identifier: 
-                return True, Token(i.value, None)
+    """ Verifica se e uma palavra reservada 
+
+    Keyword arguments:
+    identifier -- palavra identificada (default "")
+    
+    Return: (2 Parametros de retorno)
+    TRUE caso a palavra seja reservada, FALSE caso Contrario 
+    TOKEN associado a palavra reservada, NONE caso nao seja reservada 
+    """
+    @classmethod
+    def isReservedWord(self, identifier="" ):
+        for i, j in ReserverdWord.__members__.items():
+            if i.lower() == identifier: 
+                return True, Token(j.value, None)
         return False, None
             
 # Classe para Manipular o Token
@@ -36,9 +47,21 @@ class Token:
     def __init__(self, tipo, valor): 
         self.tipo = tipo
         self.valor = valor 
+    def __repr__(self):
+        return str(self.__dict__)
 
-def analyzeWord( word ): 
+""" Realiza a analise lexica em uma palavra (string)
+
+Keyword arguments:
+word -- palavra a ser analisada (default "")
+
+Return: (2 Parametros de retorno)
+Lista de Tokens associados a cada String
+Dict de Identificadores associados a cada token ID (formato {nome:conteudo})
+"""
+def analyzeWord( word="" ): 
     tokenList = []
+    idList = {}
               
     while len(word) > 0 : 
         char = word[0]
@@ -53,21 +76,20 @@ def analyzeWord( word ):
 
         # ============== PROCURAR ID E PALAVRAS RESERVADAS ====================
         if foundId:
-            for i in foundId:
-                idWord = i[0]; 
+            idWord = foundId.pop()[0]; 
             # Verify if is reserved word 
-            isReserved, reservedWordToken = ReserverdWord.isReservedWord(idWord)
+            isReserved, reservedWordToken = ReserverdWord.isReservedWord( idWord )
             if isReserved:
                 token = reservedWordToken
             else: 
+                idList[idWord] = None
                 token = Token('ID', idWord)
             tokenList.append(token)
             word = re.sub(Regex.ID.value, '', word) 
             continue
         # ========================== PROCURAR NUMERO ==========================
         elif foundNumber:
-            for i in foundNumber:
-                token = Token('NUM', i[0])
+            token = Token('NUM', foundNumber.pop()[0])
             tokenList.append(token)
             word = re.sub(Regex.NUMBER.value, '', word) 
             continue
@@ -157,19 +179,43 @@ def analyzeWord( word ):
         else:
             token = Token('ERRO', None)
             tokenList.append(token) 
-        
-    return tokenList
-    
+   
+    return tokenList, idList
+
+""" Manipula o codigo fonte para analise lexica 
+
+Keyword arguments:
+content -- codigo fonte como String
+
+Return: (2 Parametros de retorno)
+Lista de Tokens associados a todo o Codigo
+Dict de Identificadores associados a cada token ID (formato {nome:conteudo})
+"""
 def anaLex(content):    
-    # Dividir o conteudo por espaco 
+    # Dividir o conteudo por espaco para analisar cada String separadamente
     contentSplittingBySpace = content.split()
         
     # Percorrer Conteudo
-    tokenList = []
+    tokenList = []; idList = {}
     for strSplitting in contentSplittingBySpace:
-        tokenList = tokenList + analyzeWord( strSplitting )
+        token = []; identifier = {}
+        token, identifier = analyzeWord( strSplitting )
+        tokenList = tokenList + token
+        idList = {**idList, **identifier}
         
-    return tokenList;     
+    return tokenList, idList;     
+
+""" Escreve em um arquivo o conteudo formatado  
+
+Keyword arguments:
+name -- nome do arquivo
+obj  -- objeto a ser escrito 
+
+Return: None
+"""
+def saveInFile(name, obj):
+    with open(name, "w") as outputFile:
+        pprint.pprint(obj, outputFile)
             
 def main(): 
     # Ler Conteudo do Arquivo 
@@ -178,9 +224,18 @@ def main():
     content = file.read()
     
     # Analise Lexica 
-    tokenList = anaLex(content)
-    [print("Token ->\n\tTipo: {},\tValor: {}".format(token.tipo, token.valor)) for token in tokenList]
-
-            
+    tokenList, idList = anaLex(content)
+    
+    # Imprimir no console 
+    pp = pprint.PrettyPrinter(indent=2)
+    pp.pprint({'TOKEN': tokenList})
+    pp.pprint({'ID': idList})
+    
+    # Salvar Tokens em Arquivo 
+    saveInFile("tokenList.txt", tokenList)
+    
+    # Salvar Id's em Arquivo 
+    saveInFile("idList.txt", idList)
+    
 if __name__ == "__main__":
     main()
