@@ -58,7 +58,9 @@ class Grammar(object):
                 self.nextToken()
                 self.expressao()
                 self.nextToken()
-                if self.token.valor != 'RPA':
+                if self.token.valor == 'RPA':
+                    self.nextToken()
+                else:
                     raise Exception(') not found')
             else:
                 raise Exception('( not found')
@@ -69,6 +71,8 @@ class Grammar(object):
                 self.token.tipo == 'ID'
                 self.nextToken()
                 if self.token.valor != 'RPA':
+                    self.nextToken()
+                else:
                     raise Exception(') not found')
             else:
                 raise Exception('( not found')
@@ -82,11 +86,9 @@ class Grammar(object):
     
     # resto1 -> + termo resto1 | - termo resto1 | epsilon
     def resto1(self):
-        if self.token.valor == 'ADD':
+        if self.token.valor in ['ADD', 'SUB']:
             self.nextToken()
-            self.resto1()
-        elif self.token.valor == 'SUB':
-            self.nextToken()
+            self.termo()
             self.resto1()
         else: 
             pass
@@ -98,15 +100,7 @@ class Grammar(object):
     
     # resto2 -> * fator resto2 | / fator resto2 | % fator resto2 | epsilon 
     def resto2(self): 
-        if self.token.valor == 'MUL':
-            self.nextToken()
-            self.fator()
-            self.resto2()
-        elif self.token.valor == 'DIV':
-            self.nextToken()
-            self.fator()
-            self.resto2()
-        elif self.token.valor == 'MOD':
+        if self.token.valor in ['MUL','DIV','MOD']:
             self.nextToken()
             self.fator()
             self.resto2()
@@ -118,7 +112,9 @@ class Grammar(object):
         if self.token.valor == 'LPA':
             self.nextToken()
             self.expressao()
-            if self.token.valor != 'RPA':
+            if self.token.valor == 'RPA':
+                self.nextToken()
+            else:
                 raise Exception(') not found')
         else:
             self.base()

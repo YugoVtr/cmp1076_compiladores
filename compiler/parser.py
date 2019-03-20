@@ -14,7 +14,7 @@ import pprint
 # Classe para Analise Sintatica 
 class Parser(object):
     
-    def __init__(self, fileName='main.c'):
+    def __init__(self, fileName):
         self.__lexer = Lexer(fileName)
         self.__grammar = Grammar()
         

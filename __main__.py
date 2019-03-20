@@ -7,7 +7,7 @@ Compilador Main - Versao 1.0
 """
 from compiler.parser import Parser
 def main(): 
-    parser = Parser() 
+    parser = Parser('main') 
     parser.syntaxAnalisys()
 
 if __name__ == "__main__":
