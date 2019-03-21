@@ -57,7 +57,6 @@ class Grammar(object):
             if self.token.valor == 'LPA':
                 self.nextToken()
                 self.expressao()
-                self.nextToken()
                 if self.token.valor == 'RPA':
                     self.nextToken()
                 else:
@@ -70,7 +69,7 @@ class Grammar(object):
                 self.nextToken()
                 self.token.tipo == 'ID'
                 self.nextToken()
-                if self.token.valor != 'RPA':
+                if self.token.valor == 'RPA':
                     self.nextToken()
                 else:
                     raise Exception(') not found')

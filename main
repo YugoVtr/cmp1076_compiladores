@@ -3,4 +3,4 @@ y = 5 ;
 x = x * ( y + 15 ) ; 
 leia ( z ) ; 
 y = x ^ z ; 
-escreva ( y ) ;  
+escreva ( y ) ;
