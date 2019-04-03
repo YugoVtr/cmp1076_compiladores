@@ -13,7 +13,8 @@ class Grammar(object):
         self.__space = 0
     
     def nextToken(self):
-        self.__tokens.pop(0)
+        if self.__tokens:
+            self.__tokens.pop(0)
         
     @property
     def token(self):
@@ -31,19 +32,19 @@ class Grammar(object):
     
     # lista_instrucoes -> instrucao ; lista_instrucoes | epsilon
     def listaInstrucoes(self): 
-        if not self.token.tipo:
+        self.instrucao()
+        if self.token.valor == 'SEM':
+            self.nextToken()
+            self.listaInstrucoes()
+        elif not self.token.tipo:
+            self.nextToken()
             pass
-        else:
-            self.instrucao()
-            if self.token.valor == 'SEM':
-                self.nextToken()
-                self.listaInstrucoes()
-            else: 
-                raise Exception('; not found')
+        else: 
+            raise Exception('; not found')
     
     # instrucao -> id = expressao
-    #           -> escreva ( expressao )
-    #           -> leia ( id )
+    #           -> escreva expressao
+    #           -> leia id 
     def instrucao(self):
         if self.token.tipo == 'ID': 
             self.nextToken()
@@ -51,30 +52,16 @@ class Grammar(object):
                 self.nextToken()
                 self.expressao()
             else: 
-                raise Exception('= not found')
+                raise Exception('= expected after ID')
         elif self.token.tipo == 'ESCREVA':
             self.nextToken()
-            if self.token.valor == 'LPA':
-                self.nextToken()
-                self.expressao()
-                if self.token.valor == 'RPA':
-                    self.nextToken()
-                else:
-                    raise Exception(') not found')
-            else:
-                raise Exception('( not found')
+            self.expressao()
         elif self.token.tipo == 'LEIA':
             self.nextToken()
-            if self.token.valor == 'LPA':
+            if self.token.tipo == 'ID': 
                 self.nextToken()
-                self.token.tipo == 'ID'
-                self.nextToken()
-                if self.token.valor == 'RPA':
-                    self.nextToken()
-                else:
-                    raise Exception(') not found')
-            else:
-                raise Exception('( not found')
+            else :
+                raise Exception('ID expected after LEIA')
         else:
             pass
             
@@ -106,38 +93,31 @@ class Grammar(object):
         else:
             pass 
     
-    # fator -> base resto3 | ( expressao )
+    # fator -> base resto3
     def fator(self): 
-        if self.token.valor == 'LPA':
-            self.nextToken()
-            self.expressao()
-            if self.token.valor == 'RPA':
-                self.nextToken()
-            else:
-                raise Exception(') not found')
-        else:
-            self.base()
-            self.resto3()
+        self.base()
+        self.resto3()
     
-    # resto3 -> ^ expoente | epsilon
+    # resto3 -> ^ expressao | epsilon
     def resto3(self): 
         if self.token.valor == 'POW':
             self.nextToken()
-            self.expoente()
+            self.expressao()
         else:
             pass
     
-    # base -> id | num 
+    # base -> id | num | (expressao)
     def base(self): 
         if self.token.tipo == 'ID' or self.token.tipo == 'NUM':
             self.nextToken()
+        elif self.token.valor == 'LPA': 
+            self.nextToken()
+            self.expressao()
+            if self.token.valor == 'RPA': 
+                self.nextToken()
+            else: 
+                raise Exception('right parentesis was expected')
         else:
             raise Exception('ID or NUM was expected')
     
-    # expoente -> id | num 
-    def expoente(self): 
-        if self.token.tipo == 'ID' or self.token.tipo == 'NUM':
-            self.nextToken()
-        else:
-            raise Exception('ID or NUM was expected')
     

@@ -95,7 +95,7 @@ class Lexer(object):
 
             # ============== PROCURAR ID E PALAVRAS RESERVADAS ====================
             if foundId:
-                idWord = foundId.pop()[0]; 
+                idWord = foundId.pop()[0]
                 # Verify if is reserved word 
                 isReserved, reservedWordToken = ReserverdWord.isReservedWord( idWord )
                 if isReserved:
