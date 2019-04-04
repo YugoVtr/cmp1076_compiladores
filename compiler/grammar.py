@@ -9,8 +9,12 @@ from compiler.lexer import Token
 
 # Classe para Representar a gramatica
 class Grammar(object):    
-    def __init__(self):
-        self.__space = 0
+    def __init__(self, tokens, ids):
+        self.__tokens = list( tokens )
+        self.__ids = dict( ids )
+        self.__stack = list()
+        self.__error = Exception()
+        self.__prompt = 'xD >> '
     
     def nextToken(self):
         if self.__tokens:
@@ -23,12 +27,22 @@ class Grammar(object):
         else:
             return Token(None, None)
     
+    @property 
+    def errorHandling(self):
+        return self.__error
+
     # ==========================  Producoes ===================================
     # programa -> lista_instrucoes
-    def programa(self, tokens):
-        self.__tokens = list( tokens )
-        self.listaInstrucoes()
-        return len(self.__tokens) == 0
+    def programa(self):
+        try:
+            self.listaInstrucoes()
+        except ValueError:
+            self.__error = Exception("Only numbers be expected")
+        except Exception as error:
+            self.__error = error
+        finally:
+            return len(self.__tokens) == 0 and len(str( self.__error )) == 0
+ 
     
     # lista_instrucoes -> instrucao ; lista_instrucoes | epsilon
     def listaInstrucoes(self): 
@@ -47,18 +61,24 @@ class Grammar(object):
     #           -> leia id 
     def instrucao(self):
         if self.token.tipo == 'ID': 
+            identificador = self.token.value
             self.nextToken()
             if  self.token.tipo == 'ATRIB':
                 self.nextToken()
                 self.expressao()
+                self.__ids[identificador] = self.__stack.pop()
             else: 
                 raise Exception('= expected after ID')
+
         elif self.token.tipo == 'ESCREVA':
             self.nextToken()
             self.expressao()
+            print(self.__prompt + self.__stack.pop())
+
         elif self.token.tipo == 'LEIA':
             self.nextToken()
             if self.token.tipo == 'ID': 
+                self.__ids[self.token.valor] =  float( input(self.__prompt) )
                 self.nextToken()
             else :
                 raise Exception('ID expected after LEIA')

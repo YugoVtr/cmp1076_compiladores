@@ -16,18 +16,18 @@ class Parser(object):
     
     def __init__(self, fileName):
         self.__lexer = Lexer(fileName)
-        self.__grammar = Grammar()
+        self.__grammar = None
         
     def syntaxAnalisys(self):
         # Analise Lexica 
         tokenList, idList = self.__lexer.lexicalAnalysis()
-
-        # Imprimir no console 
-        pp = pprint.PrettyPrinter(indent=2)
-        pp.pprint({'TOKEN': tokenList})
-        pp.pprint({'ID': idList})
+        self.__grammar = Grammar(tokenList, idList)
         
-        if self.__grammar.programa( tokenList ) : 
+        if self.__grammar.programa() : 
+            # Imprimir no console 
+            # pp = pprint.PrettyPrinter(indent=2)
+            # pp.pprint({'TOKEN': tokenList})
+            # pp.pprint({'ID': idList})
             print('VALID')
         else:
-            print('INVALID')
+            print(self.__grammar.errorHandling)

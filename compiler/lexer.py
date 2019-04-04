@@ -76,7 +76,7 @@ class Lexer(object):
             tokenList = tokenList + token
             idList = {**idList, **identifier}
            
-        return tokenList, idList; 
+        return tokenList, idList
     
     def analyzeWord(self, word="" ): 
         tokenList = []
