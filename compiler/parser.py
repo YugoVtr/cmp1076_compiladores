@@ -15,9 +15,14 @@ import pprint
 class Parser(object):
     
     def __init__(self, fileName):
-        self.__lexer = Lexer(fileName)
-        self.__grammar = None
-        
+        try:
+            self.__lexer = Lexer(fileName)
+            self.__grammar = None
+        except FileNotFoundError as error:
+            raise Exception('"{0}" nao encontrado'.format(fileName))
+        except Exception as error:
+            raise error
+            
     def syntaxAnalisys(self):
         # Analise Lexica 
         tokenList, idList = self.__lexer.lexicalAnalysis()
