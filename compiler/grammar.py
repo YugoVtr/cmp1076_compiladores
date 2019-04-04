@@ -14,7 +14,6 @@ class Grammar(object):
         self.__ids = dict( ids )
         self.__stack = list()
         self.__error = Exception()
-        self.__prompt = 'xD >> '
     
     def nextToken(self):
         if self.__tokens:
@@ -42,7 +41,6 @@ class Grammar(object):
             self.__error = error
         finally:
             return len(self.__tokens) == 0 and len(str( self.__error )) == 0
- 
     
     # lista_instrucoes -> instrucao ; lista_instrucoes | epsilon
     def listaInstrucoes(self): 
@@ -61,24 +59,34 @@ class Grammar(object):
     #           -> leia id 
     def instrucao(self):
         if self.token.tipo == 'ID': 
-            identificador = self.token.value
+            identificador = self.token.valor
             self.nextToken()
             if  self.token.tipo == 'ATRIB':
                 self.nextToken()
                 self.expressao()
+
+                ## TRADUCAO ##
                 self.__ids[identificador] = self.__stack.pop()
+                ## FIM TRADUCAO ##
+
             else: 
                 raise Exception('= expected after ID')
-
         elif self.token.tipo == 'ESCREVA':
             self.nextToken()
             self.expressao()
-            print(self.__prompt + self.__stack.pop())
+
+            ## TRADUCAO ##
+            print('xD >> {0}'.format(self.__stack.pop()) )
+            ## FIM TRADUCAO ##
 
         elif self.token.tipo == 'LEIA':
             self.nextToken()
-            if self.token.tipo == 'ID': 
-                self.__ids[self.token.valor] =  float( input(self.__prompt) )
+            if self.token.tipo == 'ID':
+
+                ## TRADUCAO ##
+                self.__ids[self.token.valor] =  float( input('xD << ') )
+                ## FIM TRADUCAO ##
+
                 self.nextToken()
             else :
                 raise Exception('ID expected after LEIA')
@@ -93,9 +101,24 @@ class Grammar(object):
     # resto1 -> + termo resto1 | - termo resto1 | epsilon
     def resto1(self):
         if self.token.valor in ['ADD', 'SUB']:
+
+            ## TRADUCAO ##
+            op = self.token.valor
+            ## FIM TRADUCAO ##
+
             self.nextToken()
             self.termo()
             self.resto1()
+
+            ## TRADUCAO ##
+            op2 = self.__stack.pop()
+            op1 = self.__stack.pop()
+            if op == 'ADD':
+                self.__stack.append(op1 + op2)
+            else:
+                self.__stack.append(op1 - op2)
+            ## FIM TRADUCAO ##
+
         else: 
             pass
             
@@ -107,9 +130,27 @@ class Grammar(object):
     # resto2 -> * fator resto2 | / fator resto2 | % fator resto2 | epsilon 
     def resto2(self): 
         if self.token.valor in ['MUL','DIV','MOD']:
+
+            ## TRADUCAO ##
+            op = self.token.valor
+            ## FIM TRADUCAO ##
+
             self.nextToken()
             self.fator()
             self.resto2()
+
+            ## TRADUCAO ##
+            op2 = self.__stack.pop()
+            op1 = self.__stack.pop()
+            if op == 'MUL':
+                self.__stack.append(op1 * op2)
+            elif op2 == 0: 
+                raise Exception('division by zero no way !!!')
+            elif op == 'DIV':
+                self.__stack.append(op1 / op2)
+            else:
+                self.__stack.append(op1 % op2)
+            ## FIM TRADUCAO ##
         else:
             pass 
     
@@ -123,12 +164,29 @@ class Grammar(object):
         if self.token.valor == 'POW':
             self.nextToken()
             self.expressao()
+
+            ## TRADUCAO ##
+            op2 = self.__stack.pop()
+            op1 = self.__stack.pop()
+            self.__stack.append(op1 ** op2)
+            ## FIM TRADUCAO ##
         else:
             pass
     
     # base -> id | num | (expressao)
     def base(self): 
-        if self.token.tipo == 'ID' or self.token.tipo == 'NUM':
+        if self.token.tipo in ['ID','NUM']:
+
+            ## TRADUCAO ##
+            if self.token.tipo == 'ID':
+                value = self.__ids[self.token.valor]
+                if value is None: 
+                    raise Exception("'{0}' is not defined".format(self.token.valor))
+                self.__stack.append(self.__ids[self.token.valor])
+            else:
+                self.__stack.append( float(self.token.valor) )
+            ## FIM TRADUCAO ##
+
             self.nextToken()
         elif self.token.valor == 'LPA': 
             self.nextToken()
@@ -139,5 +197,3 @@ class Grammar(object):
                 raise Exception('right parentesis was expected')
         else:
             raise Exception('ID or NUM was expected')
-    
-    

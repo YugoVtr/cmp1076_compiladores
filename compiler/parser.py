@@ -23,11 +23,11 @@ class Parser(object):
         tokenList, idList = self.__lexer.lexicalAnalysis()
         self.__grammar = Grammar(tokenList, idList)
         
-        if self.__grammar.programa() : 
+        if self.__grammar.programa():
+            pass 
             # Imprimir no console 
             # pp = pprint.PrettyPrinter(indent=2)
             # pp.pprint({'TOKEN': tokenList})
             # pp.pprint({'ID': idList})
-            print('VALID')
         else:
             print(self.__grammar.errorHandling)

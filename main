@@ -1,6 +1,6 @@
-x = 10 ; 
-y = 5 ;
-x = x * ( y + 15 ) ; 
-leia z ; 
-y = x ^ ( z + 18 ) ; 
-escreva y ;
+leia x ; 
+leia y ; 
+z = x ^ y ; 
+z = z - 8 ; 
+w = ( x * z ) % ( y / x ) ;
+escreva w ;
